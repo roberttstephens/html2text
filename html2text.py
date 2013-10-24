@@ -224,6 +224,7 @@ class HTML2Text(HTMLParser.HTMLParser):
         self.blockquote = 0
         self.pre = 0
         self.table = 0
+        self.th = 0
         self.startpre = 0
         self.code = False
         self.br_toggle = ''
@@ -555,21 +556,28 @@ class HTML2Text(HTMLParser.HTMLParser):
                     self.o(str(li['num'])+". ")
                 self.start = 1
 
-        if tag == 'table':
+        if tag == 'th':
             if start:
-                self.table = 1
-                self.o("<"+tag+">")
-            else:
-                self.table = 0
-                self.o("</"+tag+">")
-
-        if tag in ["tr", "td", "th"]:
-            if tag == 'tr':
+                self.th+=1
+        if tag == 'tr':
+            if (not start) and (self.th):
                 self.pbr()
-            if start:
-                self.o("<"+tag+">")
+                table_heading_format = '-' * 10 + '|'
+                self.o('|' + table_heading_format * self.th)
             else:
-                self.o("</"+tag+">")
+                self.th = 0
+
+        if tag == 'tr':
+            if start:
+                self.pbr()
+                self.o('|')
+
+        if tag == 'th':
+            if not start:
+                self.o('|')
+        if tag == 'td':
+            if not start:
+                self.o('|')
 
         if tag == "pre":
             if start:
